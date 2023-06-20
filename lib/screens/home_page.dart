@@ -85,7 +85,6 @@ class _HomePageState extends State<HomePage> {
                   child: Card(
                     margin: const EdgeInsets.all(4),
                     child: SizedBox(
-                      height: 100, // Increase the height of the card
                       child: ListTile(
                         leading: Stack(
                           children: [

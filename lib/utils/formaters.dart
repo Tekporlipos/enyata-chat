@@ -6,7 +6,7 @@ class Converter{
     final difference = currentTime.difference(convertedTime);
 
     if (difference.inSeconds < 0) {
-      return '3 seconds ago';
+      return '3 hours ago';
     }else if (difference.inSeconds > 0 && difference.inSeconds < 60) {
       return '${difference.inSeconds} seconds ago';
     } else if (difference.inMinutes < 60) {
