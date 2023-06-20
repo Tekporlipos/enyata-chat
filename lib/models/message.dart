@@ -1,7 +1,13 @@
 class Message {
-  final int id;
-  final int conversationId;
-  final String text;
+  final int chatId;
+  final String sender;
+  final String message;
+  final int modifiedAt;
 
-  Message({required this.id, required this.conversationId, required this.text});
+  Message({
+    required this.chatId,
+    required this.sender,
+    required this.message,
+    required this.modifiedAt,
+  });
 }

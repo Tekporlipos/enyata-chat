@@ -5,11 +5,12 @@ import '../bloc/chat_bloc.dart';
 import '../bloc/chat_event.dart';
 import '../bloc/chat_state.dart';
 import '../models/conversation.dart';
+import '../models/message.dart';
 
 class DetailsPage extends StatefulWidget {
   final Conversation conversation;
 
-  DetailsPage({required this.conversation});
+  const DetailsPage({Key? key, required this.conversation}) : super(key: key);
 
   @override
   _DetailsPageState createState() => _DetailsPageState();
@@ -17,6 +18,7 @@ class DetailsPage extends StatefulWidget {
 
 class _DetailsPageState extends State<DetailsPage> {
   final TextEditingController textController = TextEditingController();
+  List<Message> messages = [];
 
   @override
   void initState() {
@@ -27,58 +29,70 @@ class _DetailsPageState extends State<DetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.conversation.title)),
-      body: Column(
-        children: [
-          BlocBuilder<ChatBloc, ChatState>(
-            builder: (context, state) {
-              if (state is ChatLoadingState) {
-                return const Expanded(child: Center(child: CircularProgressIndicator()));
-              } else if (state is ChatErrorState) {
-                return Expanded(child: Center(child: Text('Error: ${state.error}')));
-              } else if (state is MessagesLoadedState) {
-                final messages = state.messages;
-                return Expanded(
-                  child: ListView.builder(
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final message = messages[index];
-                      return ListTile(
-                        title: Text(message.text),
-                      );
-                    },
-                  ),
+      appBar: AppBar(title: Text(widget.conversation.topic ?? 'No Topic')),
+      body: BlocBuilder<ChatBloc, ChatState>(
+        builder: (context, state) {
+          if (state is MessagesLoadingState) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is MessagesLoadedState) {
+            messages = state.messages.cast<Message>(); // Explicitly cast the messages
+            return ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                final message = messages[index];
+                return ListTile(
+                  title: Text(message.sender),
+                  subtitle: Text(message.message),
                 );
-              }
-              return Container();
-            },
-          ),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: textController,
-                    decoration: const InputDecoration(
-                      hintText: 'Type a message...',
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: () {
-                    final text = textController.text.trim();
-                    if (text.isNotEmpty) {
-                      BlocProvider.of<ChatBloc>(context).add(PostMessageEvent(widget.conversation.id, text));
-                      textController.clear();
-                    }
-                  },
-                ),
-              ],
+              },
+            );
+          } else if (state is ChatErrorState) {
+            return Center(child: Text('Error: ${state.error}'));
+          }
+          return Container();
+        },
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: textController,
+                decoration: const InputDecoration(hintText: 'Type a message...'),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 8.0),
+            ElevatedButton(
+              onPressed: () {
+                final newMessage = Message(
+                  chatId: widget.conversation.id,
+                  sender: 'User',
+                  message: textController.text,
+                  modifiedAt: DateTime.now().millisecondsSinceEpoch,
+                );
+                setState(() {
+                  messages.add(newMessage);
+                });
+                textController.clear();
+                // Simulate receiving an answer after a short delay
+                Future.delayed(const Duration(seconds: 2), () {
+                  final answerMessage = Message(
+                    chatId: widget.conversation.id,
+                    sender: 'Bot',
+                    message: 'Received your message!',
+                    modifiedAt: DateTime.now().millisecondsSinceEpoch,
+                  );
+                  setState(() {
+                    messages.add(answerMessage);
+                  });
+                });
+              },
+              // ignore: prefer_const_constructors
+              child: Text('Send'),
+            ),
+          ],
+        ),
       ),
     );
   }

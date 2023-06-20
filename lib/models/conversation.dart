@@ -1,6 +1,15 @@
 class Conversation {
   final int id;
-  final String title;
+  final String lastMessage;
+  final List<String> members;
+  final String? topic;
+  final int modifiedAt;
 
-  Conversation({required this.id, required this.title});
+  Conversation({
+    required this.id,
+    required this.lastMessage,
+    required this.members,
+    this.topic,
+    required this.modifiedAt,
+  });
 }
